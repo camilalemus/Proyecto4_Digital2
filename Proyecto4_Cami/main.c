@@ -1,8 +1,8 @@
-//*******************************************************
+//**************************************************************************
 // Camila Lemus Lone
 // 18272
 // Universidad del Valle de Guatemala
-//*******************************************************
+//**************************************************************************
 
 #include<stdint.h>
 #include<stdbool.h>
@@ -17,10 +17,8 @@
 #include "driverlib/pin_map.h"
 #include "inc/hw_gpio.h"
 
-//****VARIABLES***
+//**********************VARIABLES*******************************************
 
-//bool state = false;
-//bool stateantes = true;
 bool flag = false;
 int led;
 char letra;
@@ -46,17 +44,17 @@ int stateantes[] = { 1, 1, 1, 1 };
 #define GREEN GPIO_PIN_3
 #define BLUE GPIO_PIN_2
 #define OFF 0
-#define ON 0
+
 
 // Display
 //-----------
-// PB5
-// PB0
-// PB1
-// PE4
-// PE5
-// PB4
-// PA5
+// PB5 - g
+// PB0 - f
+// PB1 - a
+// PE4 - b
+// PE5 - e
+// PB4 - d
+// PA5 - c
 
 // Leds azules
 //------------
@@ -79,10 +77,10 @@ int stateantes[] = { 1, 1, 1, 1 };
 // PB3
 // PC4
 
-//***INSTANCIAR FUNCIONES***
-
+//************************INSTANCIAR FUNCIONES*********************************
 void UART_Config(void);
 void Parqueos(void);
+void Display(void);
 
 /**
  * main.c
@@ -158,14 +156,19 @@ int main(void)
     GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_3, 0); //Led roja parqueo 3 OFF
     GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1, 0); //Led roja parqueo 4 OFF
 
+    GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_5, OFF); //A
+    GPIOPinWrite(GPIO_PORTB_BASE, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4|GPIO_PIN_5,GPIO_PIN_1|GPIO_PIN_4); //B
+    GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_4|GPIO_PIN_5,GPIO_PIN_5); //E
+
+    //Display();
     int n = 0;
 
     while (1)
     {
-
+        contador = 0;
         //  contador = parqueo1 + parqueo2 + parqueo3 + parqueo4;
-        state[n] = GPIOPinRead(pushP[n], pushV[n]); //Lee push
-        if (state[n] != stateantes[n])
+        state[n] = GPIOPinRead(pushP[n], pushV[n]); //Lee el push que apachó
+        if (state[n] != stateantes[n]) //Si cambia de estado
         {
             stateantes[n] = state[n];
             parqueo = n + 1;
@@ -213,16 +216,16 @@ void Parqueos(void)
         if (state[0] == 0)
         {
             GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_0, 0); //Led verde parqueo 1 OFF
-            GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_1, GPIO_PIN_1); //Led verde parqueo 1 ON
+            GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_1, GPIO_PIN_1); //Led roja parqueo 1 ON
+            contador++;
         }
 
         else
         {
-            GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_0, GPIO_PIN_0); //Led roja parqueo 1 encendida
-            GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_1, 0); //Led verde parqueo 1 encendida
+            GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_0, GPIO_PIN_0); //Led verde parqueo 1 ON
+            GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_1, 0); //Led roja parqueo 1 OFF
+         //   contador--;
         }
-
-        parqueo1 = 1;
         break;
     case 2:
 
@@ -230,7 +233,7 @@ void Parqueos(void)
         {
             GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_2, GPIO_PIN_2); //Led ROJO parqueo 2 encendida
             GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_1, 0); //Led ROJO parqueo 2 encendida
-
+            contador++;
         }
 
         else
@@ -238,41 +241,76 @@ void Parqueos(void)
 
             GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_2, 0); //Led ROJO parqueo 2 encendida
             GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_1, GPIO_PIN_1); //Led ROJO parqueo 2 encendida
+         //   contador--;
         }
-
-        parqueo2 = 1;
         break;
     case 3:
         if (state[2] == 0)
         {
             GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_2, 0); //Led ROJO parqueo 2 encendida
             GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_3, GPIO_PIN_3); //Led ROJO parqueo 2 encendida
-
+            contador++;
         }
 
         else
         {
             GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_2, GPIO_PIN_2); //Led ROJO parqueo 2 encendida
             GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_3, 0); //Led ROJO parqueo 2 encendida
+          //  contador--;
         }
-
-        parqueo3 = 3;
         break;
     case 4:
         if (state[3] == 0)
         {
             GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_3, 0); //Led ROJO parqueo 2 encendida
             GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1, GPIO_PIN_1); //Led ROJO parqueo 2 encendida
-
+            contador++;
         }
 
         else
         {
             GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_3, GPIO_PIN_3); //Led ROJO parqueo 2 encendida
             GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1, 0); //Led ROJO parqueo 2 encendida
+          //  contador--;
         }
-        parqueo4 = 1;
         break;
 
+    }
+}
+
+void Display(void)
+{
+    switch (contador)
+    {
+    case 0:
+        //CERO
+        GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_5, 0); //A
+        GPIOPinWrite(GPIO_PORTB_BASE, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4|GPIO_PIN_5,GPIO_PIN_5); //B
+        GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_4|GPIO_PIN_5,0); //E
+        break;
+    case 1:
+        //UNO
+        GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_5, OFF); //A
+        GPIOPinWrite(GPIO_PORTB_BASE, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4|GPIO_PIN_5,GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4|GPIO_PIN_5); //B
+        GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_4|GPIO_PIN_5,GPIO_PIN_5); //E
+        break;
+    case 2:
+        //DOS
+        GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_5, GPIO_PIN_5); //A
+        GPIOPinWrite(GPIO_PORTB_BASE, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4|GPIO_PIN_5,GPIO_PIN_0); //B
+        GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_4|GPIO_PIN_5, OFF); //E
+        break;
+    case 3:
+        //TRES
+        GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_5, OFF); //A
+        GPIOPinWrite(GPIO_PORTB_BASE, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4|GPIO_PIN_5,GPIO_PIN_0); //B
+        GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_4|GPIO_PIN_5,GPIO_PIN_5); //E
+        break;
+    case 4:
+        //CUATRO
+        GPIOPinWrite(GPIO_PORTA_BASE, GPIO_PIN_5, OFF); //A
+        GPIOPinWrite(GPIO_PORTB_BASE, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4|GPIO_PIN_5,GPIO_PIN_1|GPIO_PIN_4); //B
+        GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_4|GPIO_PIN_5,GPIO_PIN_5); //E
+        break;
     }
 }
