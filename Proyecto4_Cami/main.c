@@ -23,14 +23,10 @@ bool flag = false;
 int led;
 char letra;
 int parqueo;
-int parqueo1;
-int parqueo2;
-int parqueo3;
-int parqueo4;
 int contador;
 int suma;
-int cont[] = {0,0,0,0};
 
+//int cont[] = {0,0,0,0};
 int pushP[] = { GPIO_PORTF_BASE, GPIO_PORTF_BASE, GPIO_PORTB_BASE,
 GPIO_PORTC_BASE };
 int pushV[] = { GPIO_PIN_2, GPIO_PIN_3, GPIO_PIN_3, GPIO_PIN_4 };
@@ -156,6 +152,7 @@ int main(void)
     GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_3, 0); //Led roja parqueo 3 OFF
     GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1, 0); //Led roja parqueo 4 OFF
 
+    UART_Config();
 
     int n = 0;
 
@@ -175,7 +172,7 @@ int main(void)
 
         }
 
-        if (n < 4)
+        if (n < 4) //Sirve para que el n se reinicie cuando pase el tamaño del array
         {
             n++;
         }
@@ -193,14 +190,18 @@ int main(void)
 
 void UART_Config(void)
 {
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_UART0); //Peripheral del UART enable
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA); //Peripheral del puerto A enable
-    GPIOPinTypeUART(GPIO_PORTA_BASE, GPIO_PIN_0 | GPIO_PIN_1); //Los pines TX y RX se ponen en modo UART
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_UART2); //Peripheral del UART enable
+    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOD); //Peripheral del puerto C enable
+    GPIOPinConfigure(GPIO_PD6_U2RX);
+    GPIOPinConfigure(GPIO_PD7_U2TX);
+    GPIOPinTypeUART(GPIO_PORTD_BASE, GPIO_PIN_6 | GPIO_PIN_7); //Los pines TX y RX se ponen en modo UART
     //Inicializar el modulo UART con: 115200, 8 data bits, 1 stop bit, None parity.
     UARTConfigSetExpClk(
-            UART0_BASE, SysCtlClockGet(), 115200,
+            UART2_BASE, SysCtlClockGet(), 115200,
             UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE);
+  //  UARTEnable(UART2_BASE);
 }
+
 
 //*************************** LEDS PARQUEO ***************************************
 void Parqueos(void)
@@ -213,15 +214,14 @@ void Parqueos(void)
         {
             GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_0, 0); //Led verde parqueo 1 OFF
             GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_1, GPIO_PIN_1); //Led roja parqueo 1 ON
-
-            //cont[0] = 1;
+            UARTCharPut(UART2_BASE, 'A');
         }
 
         else
         {
             GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_0, GPIO_PIN_0); //Led verde parqueo 1 ON
             GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_1, 0); //Led roja parqueo 1 OFF
-           // cont[0] = 0;
+            UARTCharPut(UART2_BASE, 'B');
         }
         break;
     case 2:
@@ -230,16 +230,14 @@ void Parqueos(void)
         {
             GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_2, GPIO_PIN_2); //Led verde parqueo 2
             GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_1, 0); //Led ROJO parqueo 2 encendida
-            //cont[1] = 1;
-
+            UARTCharPut(UART2_BASE, 'C');
         }
 
         else
         {
-
             GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_2, 0); //Led ROJO parqueo 2 encendida
             GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_1, GPIO_PIN_1); //Led ROJO parqueo 2 encendida
-            //cont[0] = 0;
+            UARTCharPut(UART2_BASE, 'D');
         }
         break;
     case 3:
@@ -247,15 +245,14 @@ void Parqueos(void)
         {
             GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_2, 0); //Led ROJO parqueo 2 encendida
             GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_3, GPIO_PIN_3); //Led ROJO parqueo 2 encendida
-            //cont[2] = 1;
-
+            UARTCharPut(UART2_BASE, 'E');
         }
 
         else
         {
             GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_2, GPIO_PIN_2); //Led ROJO parqueo 2 encendida
             GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_3, 0); //Led ROJO parqueo 2 encendida
-           // cont[2] = 0;
+            UARTCharPut(UART2_BASE, 'F');
         }
         break;
     case 4:
@@ -263,30 +260,27 @@ void Parqueos(void)
         {
             GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_3, 0); //Led ROJO parqueo 2 encendida
             GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1, GPIO_PIN_1); //Led ROJO parqueo 2 encendida
-           // cont[3] = 1;
-
+            UARTCharPut(UART2_BASE, 'G');
         }
 
         else
         {
             GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_3, GPIO_PIN_3); //Led ROJO parqueo 2 encendida
             GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1, 0); //Led ROJO parqueo 2 encendida
-           // cont[0] = 0;
+            UARTCharPut(UART2_BASE, 'H');
         }
         break;
-
     }
-
 }
 
 
 //*************************** DISPLAY ***************************************
 
-void Display(void)
+void Display(void)  //Enciende el numero correspondiente en el display
 {
     suma = 4;
     int i;
-    for(i=0; i<4; i++){
+    for(i=0; i<4; i++){             //For que chequea cuantos parqueos hay disponibles
         if (state[i] == 0){
             suma--;
         }
